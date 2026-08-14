@@ -516,16 +516,46 @@ Origin: https://target.com.evil.com   <span class="cmt"># weak substring/suffix 
   </div>
 
   <h3>Interview Questions — Batch 1</h3>
-  <ol class="qbank">
-    <li>Walk me through how you'd confirm a SQL injection is real versus a coincidental error message.</li>
-    <li>What's the difference between reflected, stored, and DOM-based XSS, and which is hardest to find with a scanner alone?</li>
-    <li>How does Burp's Autorize extension actually detect a broken authorization check?</li>
-    <li>You find a CSRF token that never changes across requests for the same user. Is that itself a finding, and why?</li>
-    <li>Explain why a 403 response can sometimes be worse for security than a 404 in the context of IDOR testing.</li>
-    <li>What would make you flag a Scanner-reported "SQL injection" finding as a likely false positive before manually confirming it?</li>
-    <li>Describe how you'd test for a missing rate limit on a password-reset OTP endpoint, end to end.</li>
-    <li>What's the practical risk of a CORS policy that reflects the request Origin with credentials allowed?</li>
-  </ol>
+  <p style="margin:0 0 8px;color:var(--muted);font-size:.88rem">Expand each for a model answer with a concrete example — try answering first.</p>
+
+  <details><summary>1. Walk me through how you'd confirm a SQL injection is real versus a coincidental error message.</summary><div class="a">
+  <p style="margin:0">A single error on its own proves nothing — plenty of inputs trigger a generic 500 for unrelated reasons. Confirm it with a true/false logic pair on the same parameter: send <code>' OR '1'='1</code> and separately <code>' OR '1'='2</code>. If the two produce genuinely different results (different data returned, different response length, or one errors and the other doesn't) while everything else about the request is identical, that difference can only be explained by your input reaching and altering the SQL logic — that's the confirmation, not the initial error.</p>
+  </div></details>
+
+  <details><summary>2. What's the difference between reflected, stored, and DOM-based XSS, and which is hardest to find with a scanner alone?</summary><div class="a">
+  <p style="margin:0">Reflected XSS round-trips through the server in a single request/response — the payload is in the URL or body and echoed straight back. Stored XSS is saved server-side (a comment, a profile field) and served to every subsequent viewer, making it the highest-impact of the three. DOM-based XSS never touches the server at all — client-side JavaScript reads attacker-controlled data (like <code>location.hash</code>) and writes it into a dangerous sink like <code>innerHTML</code>. DOM-based is the hardest for a scanner: there's no server round-trip to inspect, so the vulnerable data flow only exists inside the page's own JavaScript, which requires reading the JS or using a dynamic tool like DOM Invader rather than pattern-matching HTTP traffic.</p>
+  </div></details>
+
+  <details><summary>3. How does Burp's Autorize extension actually detect a broken authorization check?</summary><div class="a">
+  <p style="margin:0">You give Autorize a second, lower-privilege user's session cookie once. From then on, every request your primary (usually higher-privilege) browsing session makes gets silently replayed a second time using that low-privilege cookie instead. Autorize then diffs the two responses: if the low-privilege replay comes back with a similar 200-OK response containing real data — instead of a 401/403 or an empty/error response — it flags that endpoint red as a likely broken access-control finding, because the server clearly didn't check whether the low-privilege user was actually allowed to see it.</p>
+  </div></details>
+
+  <details><summary>4. You find a CSRF token that never changes across requests for the same user. Is that itself a finding, and why?</summary><div class="a">
+  <p style="margin:0">Yes, worth reporting even if it's not immediately exploitable on its own. A CSRF token's protective value depends on being unpredictable and ideally single-use or session-bound; a static, unchanging token per user means anyone who ever observes it once (via a referrer leak, logging, a prior XSS, or shoulder-surfing a shared screenshot) can reuse it indefinitely for that account. It also usually signals the token isn't being validated against anything meaningful server-side — often just "is a token present" rather than "is this the token issued for this specific session/action" — which is worth confirming and reporting as a weaker root cause (predictable/static CSRF token, CWE-352-adjacent) even if you can't demonstrate full exploitation in the time you have.</p>
+  </div></details>
+
+  <details><summary>5. Explain why a 403 response can sometimes be worse for security than a 404 in the context of IDOR testing.</summary><div class="a">
+  <p style="margin:0">A 404 tells an attacker nothing — the object could exist and be blocked, or simply not exist at all. A 403 that only appears for objects that <em>do</em> exist confirms existence to an unauthorized user, which is an information-disclosure leak on its own: an attacker can now enumerate every valid ID, username, or order number in the system by watching for 403 versus 404, even without ever reading the underlying data. The fix for both IDOR and this leak is the same: return an identical, generic response (usually 404) whether the object doesn't exist or the user simply isn't allowed to see it.</p>
+  </div></details>
+
+  <details><summary>6. What would make you flag a Scanner-reported "SQL injection" finding as a likely false positive before manually confirming it?</summary><div class="a">
+  <p style="margin:0">Reasons to be skeptical before spending time confirming: the finding relies on a single ambiguous signal (e.g. a slightly different response time that could just be server load, not a real time-based delay); the "error" text Scanner matched is a generic framework error page that appears for many unrelated malformed inputs, not a database-specific syntax error; or the parameter in question is never actually used in a query path (e.g. a purely client-side display field). The real test is always the same regardless of suspicion level: reproduce the true/false logic pair manually in Repeater and see if the difference is genuine and repeatable.</p>
+  </div></details>
+
+  <details><summary>7. Describe how you'd test for a missing rate limit on a password-reset OTP endpoint, end to end.</summary><div class="a">
+  <p style="margin:0 0 10px">Trigger a password reset to get a valid session/token tied to the flow, then send the OTP-verification request to Intruder with the OTP field marked, using a Numbers payload across the full range. Watch for whether a 429 or account lockout ever appears, and whether the correct OTP is still accepted after hundreds of wrong guesses.</p>
+  <pre style="margin:0"><code>POST /reset-password/verify HTTP/1.1
+Host: target.com
+
+otp=§000000§&reset_token=abc123
+
+<span class="cmt"># Intruder -> Sniper -> Numbers payload 000000-999999</span>
+<span class="cmt"># Grep-match "Invalid code" vs a success indicator; check for 429 anywhere in 6 digits of attempts</span></code></pre>
+  </div></details>
+
+  <details><summary>8. What's the practical risk of a CORS policy that reflects the request Origin with credentials allowed?</summary><div class="a">
+  <p style="margin:0">If a server echoes back whatever <code>Origin</code> header the browser sends as the value of <code>Access-Control-Allow-Origin</code>, and also sets <code>Access-Control-Allow-Credentials: true</code>, then a page hosted on any attacker-controlled domain can make an authenticated, credentialed cross-origin request to that API — the victim's browser will attach their real session cookies — and JavaScript on the attacker's page is then allowed to read the response. In practice that means a malicious site the victim simply visits can silently exfiltrate their private account data from the vulnerable API, no phishing or credential theft required, just a visit to a page you don't control.</p>
+  </div></details>
 
   <footer class="pagefoot">
     <div class="footnav">

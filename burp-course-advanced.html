@@ -463,16 +463,50 @@ $(whoami)
   </div>
 
   <h3>Interview Questions — Batch 2</h3>
-  <ol class="qbank">
-    <li>Describe a vulnerability chain you'd build from a low-severity IDOR and a weak JWT signing secret.</li>
-    <li>How do you distinguish a true SSRF from an app that just happens to make outbound requests as part of normal function?</li>
-    <li>What makes race-condition testing different from every other vulnerability class in terms of tooling and timing?</li>
-    <li>Walk through how you'd assign a CVSS score to a stored XSS that only fires in an internal admin panel.</li>
-    <li>What's your process when a WAF is clearly blocking your payloads but you believe the underlying code is vulnerable?</li>
-    <li>How would you explain the business impact of an HTTP request-smuggling finding to a non-technical stakeholder?</li>
-    <li>What's the difference between reporting a finding as "Critical" versus "High," in your own words, independent of a CVSS calculator?</li>
-    <li>Describe your evidence-collection discipline during a live engagement — what do you save, and when?</li>
-  </ol>
+  <p style="margin:0 0 8px;color:var(--muted);font-size:.88rem">Expand each for a model answer with a concrete example — try answering first.</p>
+
+  <details><summary>1. Describe a vulnerability chain you'd build from a low-severity IDOR and a weak JWT signing secret.</summary><div class="a">
+  <p style="margin:0">On its own, an IDOR that only exposes another user's non-sensitive profile field might be rated Low. But if the same app issues JWTs signed with a weak, brute-forceable HS256 secret, you can crack that secret offline (hashcat against a wordlist), then forge a brand-new token with <code>"role":"admin"</code> and any <code>user_id</code> you like — at which point the "low-severity" IDOR endpoint becomes a path to reading <em>any</em> user's full profile, or the forged admin token alone bypasses authorization entirely. The chain's overall severity is driven by the worst achievable outcome (full account takeover / admin access), not by averaging the two individual bug severities.</p>
+  </div></details>
+
+  <details><summary>2. How do you distinguish a true SSRF from an app that just happens to make outbound requests as part of normal function?</summary><div class="a">
+  <p style="margin:0">The question isn't whether the server makes outbound requests — plenty of legitimate features do (webhooks, image proxies, link previews). The question is whether <em>you</em> can control the destination. Test by pointing the URL parameter at a Burp Collaborator subdomain: if Collaborator receives a DNS or HTTP interaction, the server followed a URL you chose, which is the actual vulnerability — not the fact that outbound requests happen at all. From there, escalate by testing whether it'll also reach internal-only addresses (127.0.0.1, cloud metadata IPs) that a legitimate feature would have no reason to need.</p>
+  </div></details>
+
+  <details><summary>3. What makes race-condition testing different from every other vulnerability class in terms of tooling and timing?</summary><div class="a">
+  <p style="margin:0">Almost every other class is about crafting the right payload; race conditions are about crafting the right <em>timing</em> — the payload is often completely mundane (a normal "apply coupon" request), and the vulnerability only appears when multiple copies of it land on the server within the same narrow processing window. Sequential requests, even sent quickly one after another in Repeater, usually miss the window because each one fully completes before the next starts. That's why this class needs specialized tooling — Burp's built-in "send group in parallel" (single-packet attack) or Turbo Intruder — that can fire many requests so close together they genuinely overlap inside the server's execution.</p>
+  </div></details>
+
+  <details><summary>4. Walk through how you'd assign a CVSS score to a stored XSS that only fires in an internal admin panel.</summary><div class="a">
+  <p style="margin:0">Attack Vector: Network if the admin panel is reachable over the internet (even behind auth), or Adjacent/Local if it's genuinely restricted to an internal network segment — this single decision swings the score the most. Attack Complexity: Low if the payload just needs to be viewed by an admin, no special conditions. Privileges Required: usually Low or None depending on whether posting the stored payload itself needs an account. User Interaction: Required, since an admin has to view the page containing the payload. Scope: often Changed, since executing in the admin's browser session can affect resources beyond the vulnerable component (their session, their view of other data). Confidentiality/Integrity: typically High, since admin-session hijacking can lead to full application compromise. Walking through each metric explicitly, rather than eyeballing a number, is what makes the score defensible if a client pushes back on severity.</p>
+  </div></details>
+
+  <details><summary>5. What's your process when a WAF is clearly blocking your payloads but you believe the underlying code is vulnerable?</summary><div class="a">
+  <p style="margin:0 0 10px">Assume the WAF is matching on the literal payload string, not on the underlying vulnerability, and work through the evasion toolkit systematically rather than guessing randomly: case variation, encoding layers, and syntax the filter's rules likely didn't anticipate.</p>
+  <pre style="margin:0"><code><span class="cmt"># Original payload blocked:</span>
+' UNION SELECT username,password FROM users--
+
+<span class="cmt"># Try case mixing:</span>
+' UnIoN SeLeCt username,password FROM users--
+
+<span class="cmt"># Try inline comments splitting the keyword:</span>
+' UN/**/ION SEL/**/ECT username,password FROM users--
+
+<span class="cmt"># Try alternate encoding on the whole parameter, or test the SAME payload</span>
+<span class="cmt"># against a different parameter/header entirely -- WAF coverage is often inconsistent across routes</span></code></pre>
+  </div></details>
+
+  <details><summary>6. How would you explain the business impact of an HTTP request-smuggling finding to a non-technical stakeholder?</summary><div class="a">
+  <p style="margin:0">Avoid the CL.TE/TE.CL mechanics entirely and describe the outcome: "Because of how two of your servers disagree about where one request ends and the next begins, it's possible for one customer's request to get silently mixed into another customer's session — meaning Customer A could end up seeing a response meant for Customer B, including their session token or personal data, without either of them doing anything wrong." That framing — data belonging to one user leaking to another, through no fault of either — is what lands with a non-technical audience; the specific header-parsing mismatch is implementation detail they don't need to evaluate the risk.</p>
+  </div></details>
+
+  <details><summary>7. What's the difference between reporting a finding as "Critical" versus "High," in your own words, independent of a CVSS calculator?</summary><div class="a">
+  <p style="margin:0">Critical is reserved for findings that are both easy to exploit and catastrophic in impact at the same time — typically unauthenticated remote code execution, full database compromise, or complete authentication bypass, where almost anyone with network access can cause near-total damage with little effort. High is serious and still demands urgent attention, but usually has some limiting factor: it might require authentication first, affect a subset of data rather than everything, or need a specific precondition to line up. In practice: if you'd wake a client up at 2am over it, it's Critical; if it needs fixing this sprint but can wait until business hours, it's High.</p>
+  </div></details>
+
+  <details><summary>8. Describe your evidence-collection discipline during a live engagement — what do you save, and when?</summary><div class="a">
+  <p style="margin:0">Capture evidence the moment you confirm a finding, not at the end of the day from memory — memory reconstructs details wrong and under time pressure you will forget which exact payload worked. For every finding: save the raw request and raw response (not a screenshot of Burp's UI, the actual text) via Repeater's save function or "Copy to file," note the timestamp, and take a screenshot only as supporting visual proof (e.g. the Render tab showing an XSS alert, or a rendered page showing another user's data) in addition to the raw traffic, never instead of it. Keep this evidence organized per-finding as you go — by the time you sit down to write the report, matching evidence back to findings should be filing, not archaeology.</p>
+  </div></details>
 
   <footer class="pagefoot">
     <div class="footnav">
