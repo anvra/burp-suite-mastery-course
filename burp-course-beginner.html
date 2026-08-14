@@ -35,7 +35,15 @@
   a{color:var(--link)}
   header.top{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line);
     display:flex;align-items:center;gap:14px;padding:12px 20px}
-  .mark{width:26px;height:26px;flex:none}
+  .mark{width:26px;height:26px;flex:none;color:var(--accent)}
+  .ic{stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;display:inline-block;vertical-align:middle}
+  .hicon{width:20px;height:20px;margin-right:7px;vertical-align:-4px;color:var(--accent)}
+  .flowsvg{width:100%;max-width:620px;height:auto;margin:18px 0;color:var(--ink-soft)}
+  .flowsvg text{font-family:var(--font-sans);fill:var(--ink);font-size:12px}
+  .flowsvg .lbl{fill:var(--muted);font-size:10px}
+  .flowsvg rect{fill:var(--surface);stroke:var(--line)}
+  .flowsvg .accentbox{stroke:var(--accent)}
+  .flowsvg line,.flowsvg path.arrow{stroke:var(--muted);stroke-width:1.4;fill:none}
   .brand{font-family:var(--font-sans);font-weight:800;letter-spacing:-.01em;font-size:1.02rem}
   .crumb{color:var(--muted);font-size:.85rem}
   .crumb b{color:var(--ink-soft);font-weight:600}
@@ -117,8 +125,22 @@
 </head>
 <body>
 
+<svg style="display:none" aria-hidden="true">
+<defs>
+  <symbol id="ic-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"/></symbol>
+  <symbol id="ic-checklist" viewBox="0 0 24 24"><path d="M9 6h10M9 12h10M9 18h10"/><path d="M4.2 6l1 1 2-2"/><path d="M4.2 12l1 1 2-2"/><path d="M4.2 18l1 1 2-2"/></symbol>
+  <symbol id="ic-browser" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><circle cx="6.3" cy="6.5" r=".55" fill="currentColor" stroke="none"/><circle cx="8.6" cy="6.5" r=".55" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="ic-code" viewBox="0 0 24 24"><path d="M9 7l-5 5 5 5"/><path d="M15 7l5 5-5 5"/></symbol>
+  <symbol id="ic-terminal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3"/><path d="M12 15h5"/></symbol>
+  <symbol id="ic-cloud" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .5-7.97A5.5 5.5 0 0 0 7 9.06 4 4 0 0 0 7 18z"/></symbol>
+  <symbol id="ic-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></symbol>
+  <symbol id="ic-graph" viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15l3-4 3 2 4-6"/></symbol>
+  <symbol id="ic-database" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></symbol>
+</defs>
+</svg>
+
 <header class="top">
-  <svg class="mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="var(--accent)" stroke-width="1.6"/><circle cx="12" cy="12" r="2.4" fill="var(--accent)"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4" stroke="var(--accent)" stroke-width="1.6"/></svg>
+  <svg class="mark ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-shield"></use></svg>
   <span class="brand">Burp Suite Mastery</span>
   <span class="crumb">Stage 1 of 4 — <b>Beginner: Foundations &amp; First Intercept</b></span>
   <span class="spacer"></span>
@@ -167,9 +189,9 @@
   </div>
 
   <h2 id="m1"><span class="num">01</span>How the Web Actually Works</h2>
-  <p class="module-sub">What it is · Why it matters · How Burp fits in</p>
+  <p class="module-sub">Why it matters · What it is · How Burp fits in</p>
 
-  <p>Burp Suite is a proxy — it sits between your browser and every server you talk to, so before any of it makes sense, you need to be fluent in the thing it's showing you: an HTTP request and its response.</p>
+  <p><b>Why it matters:</b> every vulnerability in this course — SQL injection, XSS, broken access control, all of it — is a mistake made somewhere inside an HTTP request or response. If you can't read one fluently, you can't find or explain any of them. <b>What it is:</b> Burp Suite is a proxy — it sits between your browser and every server you talk to, so before any of it makes sense, you need to be fluent in the thing it's showing you: an HTTP request and its response.</p>
 
   <h3>The request/response cycle</h3>
   <pre><code><span class="cmt"># Your browser sends a request...</span>
@@ -345,10 +367,24 @@ Content-Length: 842
     <tr><td>Intercept swallows unrelated background traffic</td><td>No scope defined yet</td><td>Set Target → Scope (Stage 2 covers this in depth) and filter HTTP History to in-scope items</td></tr>
   </table></div>
 
-  <h2 id="m9"><span class="num">09</span>Proxy &amp; Intercept</h2>
-  <p><b>What it is:</b> the core MITM engine — every request/response you and your browser exchange with the target flows through it and can be paused, read, and edited.<br>
-  <b>Why it matters:</b> it's your primary audit trail and the entry point into every other tool.<br>
+  <h2 id="m9"><svg class="ic hicon" viewBox="0 0 24 24"><use href="#ic-browser"></use></svg><span class="num">09</span>Proxy &amp; Intercept</h2>
+  <p><b>Why it matters:</b> it's your primary audit trail and the entry point into every other Burp tool — nothing else in this course works until you can see and hold a request.<br>
+  <b>What it is:</b> the core MITM engine — every request/response you and your browser exchange with the target flows through it and can be paused, read, and edited.<br>
   <b>When to use it:</b> Intercept ON only when you need to modify a specific request live; leave it OFF and read HTTP History for normal browsing — flipping this habit is the single biggest quality-of-life improvement for new users.</p>
+
+  <svg class="flowsvg" viewBox="0 0 620 130" role="img" aria-label="Browser sends a request through the Burp proxy to the web server, which can intercept, modify, or log it before forwarding">
+    <rect x="10" y="40" width="130" height="50" rx="8"/>
+    <text x="75" y="70" text-anchor="middle">Browser</text>
+    <rect x="245" y="30" width="130" height="70" rx="8" class="accentbox"/>
+    <text x="310" y="60" text-anchor="middle">Burp Proxy</text>
+    <text x="310" y="76" text-anchor="middle" class="lbl">127.0.0.1:8080</text>
+    <rect x="480" y="40" width="130" height="50" rx="8"/>
+    <text x="545" y="70" text-anchor="middle">Web Server</text>
+    <path class="arrow" d="M140 65 H243" marker-end="url(#arrow)"/>
+    <path class="arrow" d="M375 65 H478" marker-end="url(#arrow)"/>
+    <text x="310" y="118" text-anchor="middle" class="lbl">Intercept · Modify · Log — every request passes through here</text>
+    <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="var(--muted)"/></marker></defs>
+  </svg>
 
   <ol class="steps">
     <li>Proxy → Intercept → turn Intercept <b>on</b>.</li>
