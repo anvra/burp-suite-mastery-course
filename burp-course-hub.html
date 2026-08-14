@@ -3,106 +3,166 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
 <title>Burp Suite Mastery</title>
 <script>
 (function(){try{var s=localStorage.getItem('burp-course-theme');if(s==='dark'||s==='light'){document.documentElement.setAttribute('data-theme',s);}}catch(e){}})();
 </script>
 <style>
+  /* ---------- Design tokens ---------- */
   :root{
-    --bg:#f6f3ec; --surface:#ffffff; --surface-2:#efeade; --ink:#20242c; --ink-soft:#4b5160;
-    --muted:#767e8c; --line:#e2dccc; --accent:#a6491f; --accent-ink:#ffffff; --accent-soft:#f1e0d2;
+    --bg:#f7f5f1; --surface:#ffffff; --surface-2:#f0ede6; --surface-hover:#eae6dd;
+    --ink:#1c2027; --ink-soft:#4a5160; --muted:#767e8c; --line:#e6e0d4; --line-strong:#d9d2c2;
+    --accent:#a6491f; --accent-ink:#ffffff; --accent-soft:#f3e2d3; --accent-soft-ink:#8a3d19;
     --link:#2f6f6b; --code-bg:#171a14; --code-ink:#c9e8c0; --code-line:#2a2e22; --code-muted:#7d8a72;
-    --good:#2f7d5a; --warn:#96690a; --bad:#a9312a; --radius:10px;
+    --good:#2f7d5a; --good-soft:#e3efe8; --warn:#96690a; --warn-soft:#f4ecd8; --bad:#a9312a; --bad-soft:#f5e3e1;
+    --shadow-sm:0 1px 2px rgba(20,15,5,.05), 0 1px 1px rgba(20,15,5,.04);
+    --shadow-md:0 8px 20px rgba(20,15,5,.07), 0 2px 6px rgba(20,15,5,.05);
+    --radius-sm:6px; --radius-md:10px; --radius-lg:16px;
+    --sp-1:.25rem; --sp-2:.5rem; --sp-3:.75rem; --sp-4:1rem; --sp-5:1.5rem; --sp-6:2rem; --sp-7:3rem; --sp-8:4.5rem;
     --font-sans: -apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro Display','Segoe UI',Roboto,Helvetica,Arial,sans-serif;
     --font-mono: 'JetBrains Mono',ui-monospace,SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace;
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
-      --bg:#14161a; --surface:#1b1e24; --surface-2:#20242b; --ink:#e9e6dd; --ink-soft:#c7c4bb;
-      --muted:#8d94a1; --line:#2b2f37; --accent:#e0824a; --accent-ink:#171a14; --accent-soft:#3a2a1f;
-      --link:#7fc6bf; --code-bg:#0d0f0b; --code-ink:#a9d9a0; --code-line:#232a1c; --code-muted:#6d7a63;
-      --good:#5fbf8f; --warn:#e0b64a; --bad:#e2695f;
+      --bg:#121317; --surface:#191b20; --surface-2:#20232a; --surface-hover:#262a32;
+      --ink:#eceae3; --ink-soft:#c2c0b8; --muted:#8b93a0; --line:#2a2d34; --line-strong:#383c45;
+      --accent:#e0824a; --accent-ink:#171a14; --accent-soft:#33251b; --accent-soft-ink:#f0a878;
+      --link:#7fc6bf; --code-bg:#0c0e0a; --code-ink:#a9d9a0; --code-line:#20261a; --code-muted:#6d7a63;
+      --good:#5fbf8f; --good-soft:#1c2b23; --warn:#e0b64a; --warn-soft:#2c2718; --bad:#e2695f; --bad-soft:#301f1d;
+      --shadow-sm:0 1px 2px rgba(0,0,0,.3); --shadow-md:0 10px 24px rgba(0,0,0,.35);
     }
   }
   :root[data-theme="dark"]{
-    --bg:#14161a; --surface:#1b1e24; --surface-2:#20242b; --ink:#e9e6dd; --ink-soft:#c7c4bb;
-    --muted:#8d94a1; --line:#2b2f37; --accent:#e0824a; --accent-ink:#171a14; --accent-soft:#3a2a1f;
-    --link:#7fc6bf; --code-bg:#0d0f0b; --code-ink:#a9d9a0; --code-line:#232a1c; --code-muted:#6d7a63;
-    --good:#5fbf8f; --warn:#e0b64a; --bad:#e2695f;
+    --bg:#121317; --surface:#191b20; --surface-2:#20232a; --surface-hover:#262a32;
+    --ink:#eceae3; --ink-soft:#c2c0b8; --muted:#8b93a0; --line:#2a2d34; --line-strong:#383c45;
+    --accent:#e0824a; --accent-ink:#171a14; --accent-soft:#33251b; --accent-soft-ink:#f0a878;
+    --link:#7fc6bf; --code-bg:#0c0e0a; --code-ink:#a9d9a0; --code-line:#20261a; --code-muted:#6d7a63;
+    --good:#5fbf8f; --good-soft:#1c2b23; --warn:#e0b64a; --warn-soft:#2c2718; --bad:#e2695f; --bad-soft:#301f1d;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.3); --shadow-md:0 10px 24px rgba(0,0,0,.35);
   }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+
+  /* ---------- Base ---------- */
+  *,*::before,*::after{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-sans);line-height:1.65;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms !important;transition-duration:.001ms !important} }
   a{color:var(--link)}
-  header.top{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:12px 20px}
-  .mark{width:26px;height:26px;flex:none;color:var(--accent)}
+  a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+  .skip-link{position:absolute;left:-999px;top:auto;background:var(--accent);color:var(--accent-ink);
+    padding:10px 16px;border-radius:0 0 8px 0;z-index:100;font-size:.85rem;font-weight:600;text-decoration:none}
+  .skip-link:focus{left:0;top:0}
+
   .ic{stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;display:inline-block;vertical-align:middle}
-  .hicon{width:20px;height:20px;margin-right:7px;vertical-align:-4px;color:var(--accent)}
-  .brand{font-family:var(--font-sans);font-weight:800;letter-spacing:-.01em;font-size:1.02rem}
+
+  /* ---------- Header ---------- */
+  header.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb, var(--surface) 88%, transparent);
+    backdrop-filter:saturate(1.1) blur(8px);-webkit-backdrop-filter:saturate(1.1) blur(8px);
+    border-bottom:1px solid var(--line);display:flex;align-items:center;gap:var(--sp-3);padding:14px 24px}
+  .mark{width:24px;height:24px;flex:none;color:var(--accent)}
+  .brand{font-family:var(--font-sans);font-weight:800;letter-spacing:-.01em;font-size:.98rem;color:var(--ink)}
   .spacer{flex:1}
-  .theme-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);
-    color:var(--ink-soft);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
-  .theme-btn:hover{border-color:var(--accent);color:var(--accent)}
-  .theme-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-  .theme-btn svg{width:17px;height:17px}
+  .theme-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface);
+    color:var(--ink-soft);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;
+    transition:border-color .15s,color .15s,box-shadow .15s}
+  .theme-btn:hover{border-color:var(--accent);color:var(--accent);box-shadow:var(--shadow-sm)}
+  .theme-btn svg{width:16px;height:16px}
   .theme-btn .icon-sun,.theme-btn .icon-moon{display:none}
   .theme-btn[data-current="light"] .icon-moon{display:block}
   .theme-btn[data-current="dark"] .icon-sun{display:block}
-  main.wrap{max-width:920px;margin:0 auto;padding:52px 28px 100px}
-  .kicker{font-size:.75rem;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);font-weight:700;margin:0 0 10px}
-  h1{font-family:var(--font-sans);font-weight:800;letter-spacing:-.02em;font-size:2.6rem;margin:0 0 12px;text-wrap:balance;line-height:1.1}
-  .lede{color:var(--ink-soft);font-size:1.15rem;max-width:66ch;margin:0 0 30px}
-  h2{font-family:var(--font-sans);font-weight:800;letter-spacing:-.01em;font-size:1.5rem;margin:52px 0 16px;padding-top:16px;border-top:1px solid var(--line);text-wrap:balance}
-  h3{font-size:1.05rem;margin:20px 0 8px;font-weight:700}
-  p{max-width:74ch}
-  .callout{border:1px solid var(--line);border-left:4px solid var(--bad);background:var(--surface);border-radius:0 var(--radius) var(--radius) 0;padding:16px 20px;margin:0 0 30px;font-size:.94rem}
-  .callout .lbl{font-weight:700;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px;color:var(--bad)}
-  .callout p{margin:0;max-width:none}
-  .stagegrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:18px 0 10px}
-  .stagecard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 22px 20px;text-decoration:none;color:var(--ink);display:block;position:relative;transition:border-color .15s}
-  .stagecard:hover{border-color:var(--accent)}
-  .stagecard .stagenum{font-family:var(--font-sans);font-weight:800;font-size:1.8rem;color:var(--accent-soft);position:absolute;top:16px;right:20px;line-height:1}
-  .stagecard .stageicon{width:26px;height:26px;margin-bottom:12px;display:block;color:var(--accent)}
-  .timeline{margin:18px 0 28px}
-  .timeline .bar{display:flex;height:34px;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
-  .timeline .bar span{display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:#fff;white-space:nowrap}
-  .timeline .seg1{background:#7fae8f}
-  .timeline .seg2{background:#5b8fa8}
-  .timeline .seg3{background:var(--accent)}
-  .timeline .seg4{background:#8a6fae}
-  .timeline .labels{display:flex;margin-top:8px;font-size:.78rem;color:var(--muted)}
-  .timeline .labels span{flex:none}
-  .linkgrid a{display:flex;align-items:center;gap:10px}
-  .linkgrid svg{flex:none;width:17px;height:17px;color:var(--accent);stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-  .stagecard h4{margin:0 0 6px;font-size:1.1rem;font-family:var(--font-sans);font-weight:800}
-  .stagecard .weeks{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px;display:block}
+
+  /* ---------- Layout ---------- */
+  main.wrap{max-width:840px;margin:0 auto;padding:var(--sp-8) 28px 120px}
+  .kicker{font-size:.72rem;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);font-weight:700;margin:0 0 var(--sp-3)}
+  h1{font-family:var(--font-sans);font-weight:800;letter-spacing:-.025em;font-size:2.75rem;margin:0 0 var(--sp-3);
+    text-wrap:balance;line-height:1.08;color:var(--ink)}
+  .lede{color:var(--ink-soft);font-size:1.15rem;line-height:1.6;max-width:60ch;margin:0 0 var(--sp-7)}
+  h2{font-family:var(--font-sans);font-weight:700;letter-spacing:-.015em;font-size:1.45rem;margin:var(--sp-8) 0 var(--sp-4);
+    padding-top:var(--sp-6);border-top:1px solid var(--line);text-wrap:balance;color:var(--ink)}
+  h3{font-size:1.02rem;margin:var(--sp-5) 0 var(--sp-2);font-weight:700;color:var(--ink)}
+  p{max-width:70ch;color:var(--ink-soft)}
+  strong,b{color:var(--ink)}
+
+  /* ---------- Callouts ---------- */
+  .callout{display:flex;gap:var(--sp-3);border:1px solid var(--line);background:var(--surface);
+    border-radius:var(--radius-md);padding:var(--sp-4) var(--sp-5);margin:0 0 var(--sp-7);font-size:.93rem}
+  .callout::before{content:'';flex:none;width:3px;border-radius:3px;background:var(--bad);align-self:stretch}
+  .callout .lbl{font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;display:block;
+    margin-bottom:4px;color:var(--bad)}
+  .callout p{margin:0;max-width:none;color:var(--ink-soft)}
+
+  /* ---------- Stage grid ---------- */
+  .stagegrid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4);margin:var(--sp-5) 0 var(--sp-3)}
+  .stagecard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);
+    padding:var(--sp-5);text-decoration:none;color:var(--ink);display:block;position:relative;
+    transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease}
+  .stagecard:hover{border-color:var(--line-strong);box-shadow:var(--shadow-md);transform:translateY(-2px)}
+  .stagecard .stagenum{font-family:var(--font-sans);font-weight:800;font-size:.72rem;letter-spacing:.08em;
+    color:var(--muted);position:absolute;top:22px;right:22px}
+  .stagecard .icontile{width:40px;height:40px;border-radius:var(--radius-sm);background:var(--accent-soft);
+    display:flex;align-items:center;justify-content:center;margin-bottom:var(--sp-4)}
+  .stagecard .icontile svg{width:20px;height:20px;color:var(--accent)}
+  .stagecard h4{margin:0 0 4px;font-size:1.08rem;font-family:var(--font-sans);font-weight:700}
+  .stagecard .weeks{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:var(--sp-3);display:block}
   .stagecard p{margin:0;color:var(--ink-soft);font-size:.9rem;max-width:none}
-  .stagecard .topics{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
-  .stagecard .topics span{font-size:.7rem;background:var(--surface-2);color:var(--ink-soft);padding:2px 8px;border-radius:20px}
-  table{border-collapse:collapse;width:100%;margin:14px 0 22px;font-size:.9rem}
-  .twrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);margin:14px 0 22px}
+  .stagecard .topics{margin-top:var(--sp-3);display:flex;flex-wrap:wrap;gap:6px}
+  .stagecard .topics span{font-size:.7rem;background:var(--surface-2);color:var(--ink-soft);padding:3px 9px;border-radius:20px}
+
+  /* ---------- Timeline ---------- */
+  .timeline{margin:var(--sp-6) 0 var(--sp-3)}
+  .timeline .bar{display:flex;height:36px;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--line)}
+  .timeline .bar span{display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;
+    color:#fff;white-space:nowrap;letter-spacing:.01em}
+  .timeline .seg1{background:#6e9c81} .timeline .seg2{background:#4f829b}
+  .timeline .seg3{background:var(--accent)} .timeline .seg4{background:#7f66a3}
+  .timeline .labels{display:flex;margin-top:var(--sp-2);font-size:.78rem;color:var(--muted)}
+  .timeline .labels span{flex:none}
+
+  /* ---------- Tables ---------- */
+  table{border-collapse:collapse;width:100%;font-size:.89rem}
+  .twrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius-md);margin:var(--sp-4) 0 var(--sp-6)}
   .twrap table{margin:0;min-width:520px}
-  th{background:var(--surface-2);text-align:left;padding:9px 12px;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);border-bottom:1px solid var(--line)}
-  td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-soft)}
-  tr:last-child td{border-bottom:none}
-  .steps{list-style:none;margin:14px 0 24px;padding:0;counter-reset:step}
-  .steps li{counter-increment:step;position:relative;padding:6px 0 6px 40px;margin-bottom:2px;font-size:.94rem}
-  .steps li::before{content:counter(step);position:absolute;left:0;top:5px;width:26px;height:26px;border-radius:50%;background:var(--surface-2);color:var(--ink-soft);font-size:.78rem;font-weight:700;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
-  .reslist{list-style:none;margin:10px 0 22px;padding:0}
-  .reslist li{padding:8px 0;border-bottom:1px solid var(--line);font-size:.92rem;color:var(--ink-soft)}
+  th{background:var(--surface-2);text-align:left;padding:11px 16px;font-size:.72rem;text-transform:uppercase;
+    letter-spacing:.05em;color:var(--muted);font-weight:700;border-bottom:1px solid var(--line)}
+  td{padding:11px 16px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-soft)}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover td{background:var(--surface-2)}
+
+  /* ---------- Lists ---------- */
+  .steps{list-style:none;margin:var(--sp-4) 0 var(--sp-6);padding:0;counter-reset:step;display:grid;gap:var(--sp-3)}
+  .steps li{counter-increment:step;position:relative;padding-left:40px;font-size:.94rem;color:var(--ink-soft)}
+  .steps li::before{content:counter(step);position:absolute;left:0;top:-2px;width:26px;height:26px;border-radius:50%;
+    background:var(--surface-2);color:var(--ink-soft);font-size:.76rem;font-weight:700;display:flex;
+    align-items:center;justify-content:center;font-variant-numeric:tabular-nums;border:1px solid var(--line)}
+  .reslist{list-style:none;margin:var(--sp-3) 0 var(--sp-6);padding:0;display:grid;gap:0}
+  .reslist li{padding:var(--sp-3) 0;border-bottom:1px solid var(--line);font-size:.92rem;color:var(--ink-soft)}
   .reslist b{color:var(--ink)}
-  code{font-family:var(--font-mono);background:var(--surface-2);padding:1px 5px;border-radius:4px;font-size:.86em}
-  .checklist{list-style:none;margin:10px 0 22px;padding:0}
-  .checklist li{padding:6px 0 6px 30px;position:relative;font-size:.92rem;border-bottom:1px dashed var(--line)}
-  .checklist li::before{content:'';position:absolute;left:2px;top:9px;width:14px;height:14px;border:2px solid var(--muted);border-radius:4px}
-  .linkgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 22px}
-  .linkgrid a{display:block;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px;text-decoration:none;color:var(--ink-soft);font-size:.88rem}
-  .linkgrid a:hover{border-color:var(--accent);color:var(--accent)}
-  .kbd{font-family:var(--font-mono);font-size:.78rem;background:var(--surface-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px}
-  footer.pagefoot{margin-top:60px;padding-top:24px;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem}
-  @media (max-width: 700px){ .stagegrid,.linkgrid{grid-template-columns:1fr} }
+  .checklist{list-style:none;margin:var(--sp-3) 0 var(--sp-6);padding:0;display:grid;gap:0}
+  .checklist li{padding:10px 0 10px 30px;position:relative;font-size:.92rem;color:var(--ink-soft);border-bottom:1px dashed var(--line)}
+  .checklist li::before{content:'';position:absolute;left:2px;top:13px;width:14px;height:14px;border:2px solid var(--muted);border-radius:4px}
+
+  /* ---------- Link grid ---------- */
+  .linkgrid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3);margin:var(--sp-4) 0 var(--sp-6)}
+  .linkgrid a{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius-sm);padding:12px 14px;text-decoration:none;color:var(--ink-soft);font-size:.87rem;
+    transition:border-color .15s,box-shadow .15s,color .15s}
+  .linkgrid a:hover{border-color:var(--accent);color:var(--accent);box-shadow:var(--shadow-sm)}
+  .linkgrid svg{flex:none;width:17px;height:17px;color:var(--accent);stroke:currentColor;fill:none;
+    stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+
+  code{font-family:var(--font-mono);background:var(--surface-2);padding:2px 6px;border-radius:4px;font-size:.86em;color:var(--ink)}
+
+  footer.pagefoot{margin-top:var(--sp-8);padding-top:var(--sp-5);border-top:1px solid var(--line);color:var(--muted);font-size:.85rem}
+  .kbd{font-family:var(--font-mono);font-size:.76rem;background:var(--surface-2);border:1px solid var(--line);
+    border-bottom-width:2px;border-radius:5px;padding:1px 7px}
+
+  @media (max-width: 700px){ .stagegrid,.linkgrid{grid-template-columns:1fr} h1{font-size:2.1rem} }
 </style>
 </head>
 <body>
+
+<a class="skip-link" href="#main-content">Skip to content</a>
 
 <svg style="display:none" aria-hidden="true">
 <defs>
@@ -115,6 +175,7 @@
   <symbol id="ic-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></symbol>
   <symbol id="ic-graph" viewBox="0 0 24 24"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15l3-4 3 2 4-6"/></symbol>
   <symbol id="ic-database" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></symbol>
+  <symbol id="ic-warning" viewBox="0 0 24 24"><path d="M12 3.5l9.5 16.5H2.5L12 3.5z"/><path d="M12 10v4.2"/><circle cx="12" cy="17.2" r=".6" fill="currentColor" stroke="none"/></symbol>
 </defs>
 </svg>
 
@@ -128,21 +189,23 @@
   </button>
 </header>
 
-<main class="wrap">
+<main class="wrap" id="main-content">
   <p class="kicker">A complete offline self-study track · Beginner → BSCP-ready</p>
   <h1>Burp Suite Mastery</h1>
   <p class="lede">Zero to Burp Suite Certified Practitioner (BSCP) ready, in four stages. Each stage is a standalone page — open it, work it top to bottom, run its labs, then move to the next. All five pages in this folder link to each other and work fully offline; the practice-lab links point to PortSwigger's real Web Security Academy.</p>
 
   <div class="callout">
-    <span class="lbl">Scope of practice — read first</span>
-    <p>Only test applications you own or have explicit written authorization to test. Unauthorized testing of third-party systems is illegal under the Computer Fraud and Abuse Act (US) and equivalent computer-misuse laws worldwide. Every lab, payload, and technique in this course is meant for your own local environment, PortSwigger Web Security Academy, or a signed engagement — never a live site you stumbled onto.</p>
+    <div>
+      <span class="lbl">Scope of practice — read first</span>
+      <p>Only test applications you own or have explicit written authorization to test. Unauthorized testing of third-party systems is illegal under the Computer Fraud and Abuse Act (US) and equivalent computer-misuse laws worldwide. Every lab, payload, and technique in this course is meant for your own local environment, PortSwigger Web Security Academy, or a signed engagement — never a live site you stumbled onto.</p>
+    </div>
   </div>
 
   <h2>The four stages</h2>
   <div class="stagegrid">
     <a class="stagecard" href="burp-course-beginner.html">
       <span class="stagenum">01</span>
-      <svg class="stageicon ic" viewBox="0 0 24 24"><use href="#ic-browser"></use></svg>
+      <span class="icontile"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-browser"></use></svg></span>
       <span class="weeks">Weeks 1–4</span>
       <h4>Beginner</h4>
       <p>Foundations &amp; First Intercept</p>
@@ -150,7 +213,7 @@
     </a>
     <a class="stagecard" href="burp-course-intermediate.html">
       <span class="stagenum">02</span>
-      <svg class="stageicon ic" viewBox="0 0 24 24"><use href="#ic-code"></use></svg>
+      <span class="icontile"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-code"></use></svg></span>
       <span class="weeks">Weeks 5–10</span>
       <h4>Intermediate</h4>
       <p>Core Vulnerabilities &amp; Burp Deep Dive</p>
@@ -158,7 +221,7 @@
     </a>
     <a class="stagecard" href="burp-course-advanced.html">
       <span class="stagenum">03</span>
-      <svg class="stageicon ic" viewBox="0 0 24 24"><use href="#ic-terminal"></use></svg>
+      <span class="icontile"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-terminal"></use></svg></span>
       <span class="weeks">Weeks 11–16</span>
       <h4>Advanced</h4>
       <p>Exploitation &amp; Professional Methodology</p>
@@ -166,7 +229,7 @@
     </a>
     <a class="stagecard" href="burp-course-assessment.html">
       <span class="stagenum">04</span>
-      <svg class="stageicon ic" viewBox="0 0 24 24"><use href="#ic-checklist"></use></svg>
+      <span class="icontile"><svg class="ic" viewBox="0 0 24 24"><use href="#ic-checklist"></use></svg></span>
       <span class="weeks">Weeks 17–20</span>
       <h4>Assessment Prep</h4>
       <p>BSCP Certification Track</p>
@@ -211,6 +274,7 @@
   <div class="linkgrid">
     <a href="https://portswigger.net/web-security" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><use href="#ic-search"></use></svg>Web Security Academy — home</a>
     <a href="https://portswigger.net/web-security/learning-paths" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><use href="#ic-graph"></use></svg>Learning Paths — guided topic order</a>
+    <a href="https://portswigger.net/web-security/all-labs" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><use href="#ic-search"></use></svg>All Labs — browse every lab by difficulty</a>
     <a href="https://portswigger.net/web-security/certification" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><use href="#ic-shield"></use></svg>BSCP Certification hub</a>
     <a href="https://portswigger.net/web-security/certification/how-to-prepare/index.html" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><use href="#ic-checklist"></use></svg>How to prepare for the exam</a>
     <a href="https://portswigger.net/web-security/certification/practice-exam/index.html" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><use href="#ic-terminal"></use></svg>Official practice exam</a>
