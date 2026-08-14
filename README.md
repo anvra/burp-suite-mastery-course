@@ -1,5 +1,8 @@
 # Burp Suite Mastery
 
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Nirmalka%20Patel-0A66C2?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/nirmalka-patel/)
+[![GitHub](https://img.shields.io/badge/GitHub-anvra-181717?style=flat&logo=github&logoColor=white)](https://github.com/anvra)
+
 A complete, offline, four-stage self-study course taking you from web security fundamentals to Burp Suite Certified Practitioner (BSCP) exam readiness.
 
 No build step, no dependencies, no internet required to read it — just open the HTML files in a browser.
@@ -37,3 +40,10 @@ Everything in this course is built for **authorized** targets only: your own loc
 - [OWASP Juice Shop](https://owasp.org/www-project-juice-shop/) — modern vulnerable app for open-ended practice
 - DVWA (Damn Vulnerable Web Application) — classic, adjustable-difficulty practice target
 - WebGoat — OWASP's guided lesson-style vulnerable app
+
+## Author
+
+Nirmalka Patel
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/nirmalka-patel/)
+[![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=flat&logo=github&logoColor=white)](https://github.com/anvra)
