@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Burp Suite Mastery</title>
+<script>
+(function(){try{var s=localStorage.getItem('burp-course-theme');if(s==='dark'||s==='light'){document.documentElement.setAttribute('data-theme',s);}}catch(e){}})();
+</script>
+<style>
+  :root{
+    --bg:#f6f3ec; --surface:#ffffff; --surface-2:#efeade; --ink:#20242c; --ink-soft:#4b5160;
+    --muted:#767e8c; --line:#e2dccc; --accent:#a6491f; --accent-ink:#ffffff; --accent-soft:#f1e0d2;
+    --link:#2f6f6b; --code-bg:#171a14; --code-ink:#c9e8c0; --code-line:#2a2e22; --code-muted:#7d8a72;
+    --good:#2f7d5a; --warn:#96690a; --bad:#a9312a; --radius:10px;
+    --font-sans: -apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro Display','Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --font-mono: 'JetBrains Mono',ui-monospace,SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#14161a; --surface:#1b1e24; --surface-2:#20242b; --ink:#e9e6dd; --ink-soft:#c7c4bb;
+      --muted:#8d94a1; --line:#2b2f37; --accent:#e0824a; --accent-ink:#171a14; --accent-soft:#3a2a1f;
+      --link:#7fc6bf; --code-bg:#0d0f0b; --code-ink:#a9d9a0; --code-line:#232a1c; --code-muted:#6d7a63;
+      --good:#5fbf8f; --warn:#e0b64a; --bad:#e2695f;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#14161a; --surface:#1b1e24; --surface-2:#20242b; --ink:#e9e6dd; --ink-soft:#c7c4bb;
+    --muted:#8d94a1; --line:#2b2f37; --accent:#e0824a; --accent-ink:#171a14; --accent-soft:#3a2a1f;
+    --link:#7fc6bf; --code-bg:#0d0f0b; --code-ink:#a9d9a0; --code-line:#232a1c; --code-muted:#6d7a63;
+    --good:#5fbf8f; --warn:#e0b64a; --bad:#e2695f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--link)}
+  header.top{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:12px 20px}
+  .mark{width:26px;height:26px;flex:none}
+  .brand{font-family:var(--font-sans);font-weight:800;letter-spacing:-.01em;font-size:1.02rem}
+  .spacer{flex:1}
+  .theme-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);
+    color:var(--ink-soft);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+  .theme-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .theme-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .theme-btn svg{width:17px;height:17px}
+  .theme-btn .icon-sun,.theme-btn .icon-moon{display:none}
+  .theme-btn[data-current="light"] .icon-moon{display:block}
+  .theme-btn[data-current="dark"] .icon-sun{display:block}
+  main.wrap{max-width:920px;margin:0 auto;padding:52px 28px 100px}
+  .kicker{font-size:.75rem;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);font-weight:700;margin:0 0 10px}
+  h1{font-family:var(--font-sans);font-weight:800;letter-spacing:-.02em;font-size:2.6rem;margin:0 0 12px;text-wrap:balance;line-height:1.1}
+  .lede{color:var(--ink-soft);font-size:1.15rem;max-width:66ch;margin:0 0 30px}
+  h2{font-family:var(--font-sans);font-weight:800;letter-spacing:-.01em;font-size:1.5rem;margin:52px 0 16px;padding-top:16px;border-top:1px solid var(--line);text-wrap:balance}
+  h3{font-size:1.05rem;margin:20px 0 8px;font-weight:700}
+  p{max-width:74ch}
+  .callout{border:1px solid var(--line);border-left:4px solid var(--bad);background:var(--surface);border-radius:0 var(--radius) var(--radius) 0;padding:16px 20px;margin:0 0 30px;font-size:.94rem}
+  .callout .lbl{font-weight:700;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px;color:var(--bad)}
+  .callout p{margin:0;max-width:none}
+  .stagegrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:18px 0 10px}
+  .stagecard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 22px 20px;text-decoration:none;color:var(--ink);display:block;position:relative;transition:border-color .15s}
+  .stagecard:hover{border-color:var(--accent)}
+  .stagecard .stagenum{font-family:var(--font-sans);font-weight:800;font-size:1.8rem;color:var(--accent-soft);position:absolute;top:16px;right:20px;line-height:1}
+  .stagecard .stageicon{font-size:1.4rem;margin-bottom:10px;display:block}
+  .stagecard h4{margin:0 0 6px;font-size:1.1rem;font-family:var(--font-sans);font-weight:800}
+  .stagecard .weeks{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px;display:block}
+  .stagecard p{margin:0;color:var(--ink-soft);font-size:.9rem;max-width:none}
+  .stagecard .topics{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+  .stagecard .topics span{font-size:.7rem;background:var(--surface-2);color:var(--ink-soft);padding:2px 8px;border-radius:20px}
+  table{border-collapse:collapse;width:100%;margin:14px 0 22px;font-size:.9rem}
+  .twrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);margin:14px 0 22px}
+  .twrap table{margin:0;min-width:520px}
+  th{background:var(--surface-2);text-align:left;padding:9px 12px;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);border-bottom:1px solid var(--line)}
+  td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-soft)}
+  tr:last-child td{border-bottom:none}
+  .steps{list-style:none;margin:14px 0 24px;padding:0;counter-reset:step}
+  .steps li{counter-increment:step;position:relative;padding:6px 0 6px 40px;margin-bottom:2px;font-size:.94rem}
+  .steps li::before{content:counter(step);position:absolute;left:0;top:5px;width:26px;height:26px;border-radius:50%;background:var(--surface-2);color:var(--ink-soft);font-size:.78rem;font-weight:700;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+  .reslist{list-style:none;margin:10px 0 22px;padding:0}
+  .reslist li{padding:8px 0;border-bottom:1px solid var(--line);font-size:.92rem;color:var(--ink-soft)}
+  .reslist b{color:var(--ink)}
+  code{font-family:var(--font-mono);background:var(--surface-2);padding:1px 5px;border-radius:4px;font-size:.86em}
+  .checklist{list-style:none;margin:10px 0 22px;padding:0}
+  .checklist li{padding:6px 0 6px 30px;position:relative;font-size:.92rem;border-bottom:1px dashed var(--line)}
+  .checklist li::before{content:'';position:absolute;left:2px;top:9px;width:14px;height:14px;border:2px solid var(--muted);border-radius:4px}
+  .linkgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 22px}
+  .linkgrid a{display:block;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px;text-decoration:none;color:var(--ink-soft);font-size:.88rem}
+  .linkgrid a:hover{border-color:var(--accent);color:var(--accent)}
+  .kbd{font-family:var(--font-mono);font-size:.78rem;background:var(--surface-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px}
+  footer.pagefoot{margin-top:60px;padding-top:24px;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem}
+  @media (max-width: 700px){ .stagegrid,.linkgrid{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <svg class="mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="var(--accent)" stroke-width="1.6"/><circle cx="12" cy="12" r="2.4" fill="var(--accent)"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4" stroke="var(--accent)" stroke-width="1.6"/></svg>
+  <span class="brand">Burp Suite Mastery</span>
+  <span class="spacer"></span>
+  <button class="theme-btn" id="theme-toggle" title="Toggle theme (Ctrl+J)" aria-label="Toggle dark/light theme">
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></svg>
+  </button>
+</header>
+
+<main class="wrap">
+  <p class="kicker">A complete offline self-study track · Beginner → BSCP-ready</p>
+  <h1>Burp Suite Mastery</h1>
+  <p class="lede">Zero to Burp Suite Certified Practitioner (BSCP) ready, in four stages. Each stage is a standalone page — open it, work it top to bottom, run its labs, then move to the next. All five pages in this folder link to each other and work fully offline; the practice-lab links point to PortSwigger's real Web Security Academy.</p>
+
+  <div class="callout">
+    <span class="lbl">Scope of practice — read first</span>
+    <p>Only test applications you own or have explicit written authorization to test. Unauthorized testing of third-party systems is illegal under the Computer Fraud and Abuse Act (US) and equivalent computer-misuse laws worldwide. Every lab, payload, and technique in this course is meant for your own local environment, PortSwigger Web Security Academy, or a signed engagement — never a live site you stumbled onto.</p>
+  </div>
+
+  <h2>The four stages</h2>
+  <div class="stagegrid">
+    <a class="stagecard" href="burp-course-beginner.html">
+      <span class="stagenum">01</span>
+      <span class="stageicon">🌱</span>
+      <span class="weeks">Weeks 1–4</span>
+      <h4>Beginner</h4>
+      <p>Foundations &amp; First Intercept</p>
+      <div class="topics"><span>HTTP/HTTPS</span><span>Cookies &amp; sessions</span><span>OWASP Top 10</span><span>Burp setup</span><span>Proxy · Repeater · Intruder</span></div>
+    </a>
+    <a class="stagecard" href="burp-course-intermediate.html">
+      <span class="stagenum">02</span>
+      <span class="stageicon">⚙️</span>
+      <span class="weeks">Weeks 5–10</span>
+      <h4>Intermediate</h4>
+      <p>Core Vulnerabilities &amp; Burp Deep Dive</p>
+      <div class="topics"><span>SQLi</span><span>XSS</span><span>CSRF</span><span>IDOR/BOLA</span><span>Auth &amp; sessions</span><span>CORS</span></div>
+    </a>
+    <a class="stagecard" href="burp-course-advanced.html">
+      <span class="stagenum">03</span>
+      <span class="stageicon">🔥</span>
+      <span class="weeks">Weeks 11–16</span>
+      <h4>Advanced</h4>
+      <p>Exploitation &amp; Professional Methodology</p>
+      <div class="topics"><span>SSRF</span><span>JWT</span><span>API/GraphQL</span><span>Business logic</span><span>Smuggling</span><span>Reporting</span></div>
+    </a>
+    <a class="stagecard" href="burp-course-assessment.html">
+      <span class="stagenum">04</span>
+      <span class="stageicon">🎓</span>
+      <span class="weeks">Weeks 17–20</span>
+      <h4>Assessment Prep</h4>
+      <p>BSCP Certification Track</p>
+      <div class="topics"><span>Exam mapping</span><span>Mock exams</span><span>Timed drills</span><span>Readiness checkpoint</span></div>
+    </a>
+  </div>
+
+  <h2>Why BSCP</h2>
+  <p>The <a href="https://portswigger.net/web-security/certification" target="_blank" rel="noopener">Burp Suite Certified Practitioner (BSCP)</a> is PortSwigger's own official, fully practical certification — timed and hands-on against realistic vulnerable applications, requiring you to actually chain and exploit vulnerabilities rather than answer questions about them. It's valid for five years and maps directly onto the Web Security Academy's topic list, which is why every module in this course cites the matching Academy topic. Stage 4 · Module 2 has the full objective-to-module mapping table.</p>
+
+  <h2>How to use this course</h2>
+  <ol class="steps">
+    <li>Work the stages in order — each assumes the previous stage's tools and vocabulary. Just open the next <code>burp-course-*.html</code> file in your browser when you're done with one.</li>
+    <li>Don't skip the labs. Reading about SQL injection and finding it yourself in a real request are different skills; the exam and real engagements only test the second one.</li>
+    <li>Every module ends with a knowledge check, flashcards, and/or interview questions — use them as a recall gate before moving on, not just a read-through.</li>
+    <li>Keep a running lab notebook (a plain text file is fine) of every finding you produce, from Stage 1 onward — by Stage 3's mini-project you'll be turning that notebook into a real report.</li>
+    <li>Re-take the self-assessment rubric in Stage 4 honestly before booking the real exam.</li>
+  </ol>
+
+  <h2>Progress tracker</h2>
+  <p>Copy this table into your own notes and fill it in as you go — it doubles as your evidence that you actually did the work, useful when a hiring manager asks "how did you prepare."</p>
+  <div class="twrap"><table>
+    <tr><th>Stage</th><th>Modules complete</th><th>Labs completed</th><th>Knowledge checks passed</th><th>Self-rating (1–5)</th></tr>
+    <tr><td>1 — Beginner</td><td>&nbsp;/16</td><td>&nbsp;</td><td>&nbsp;/4</td><td>&nbsp;</td></tr>
+    <tr><td>2 — Intermediate</td><td>&nbsp;/15</td><td>&nbsp;</td><td>Scenario #1: &nbsp;</td><td>&nbsp;</td></tr>
+    <tr><td>3 — Advanced</td><td>&nbsp;/17</td><td>&nbsp;</td><td>Capstone: &nbsp;</td><td>&nbsp;</td></tr>
+    <tr><td>4 — Assessment Prep</td><td>&nbsp;/11</td><td>Mock exam 1: &nbsp; · Mock exam 2: &nbsp;</td><td>Readiness rubric: &nbsp;</td><td>&nbsp;</td></tr>
+  </table></div>
+
+  <h2>Practical practice — real PortSwigger resources</h2>
+  <p>Every lab reference in this course points at PortSwigger's actual, live platform. Bookmark these — they're the only external links you'll need for hands-on practice:</p>
+  <div class="linkgrid">
+    <a href="https://portswigger.net/web-security" target="_blank" rel="noopener">Web Security Academy — home</a>
+    <a href="https://portswigger.net/web-security/learning-paths" target="_blank" rel="noopener">Learning Paths — guided topic order</a>
+    <a href="https://portswigger.net/web-security/certification" target="_blank" rel="noopener">BSCP Certification hub</a>
+    <a href="https://portswigger.net/web-security/certification/how-to-prepare/index.html" target="_blank" rel="noopener">How to prepare for the exam</a>
+    <a href="https://portswigger.net/web-security/certification/practice-exam/index.html" target="_blank" rel="noopener">Official practice exam</a>
+    <a href="https://portswigger.net/web-security/certification/exam-hints-and-guidance/index.html" target="_blank" rel="noopener">Exam hints &amp; guidance</a>
+    <a href="https://portswigger.net/burp/communitydownload" target="_blank" rel="noopener">Download Burp Suite</a>
+    <a href="https://portswigger.net/web-security/certification/verify-your-certification" target="_blank" rel="noopener">Verify a BSCP certification</a>
+  </div>
+
+  <h2>Recommended lab environments</h2>
+  <ul class="reslist">
+    <li><b>PortSwigger Web Security Academy</b> — free, browser-based, purpose-built labs for every topic in this course, organized by exactly the difficulty tiers (Apprentice/Practitioner/Expert) this course references. The primary environment for Stages 1–4.</li>
+    <li><b>OWASP Juice Shop</b> — a modern, deliberately vulnerable web app you run locally; excellent for open-ended, self-directed hunting between structured labs.</li>
+    <li><b>DVWA (Damn Vulnerable Web Application)</b> — classic PHP/MySQL vulnerable app with adjustable difficulty, good for early SQLi/XSS repetition.</li>
+    <li><b>WebGoat</b> — OWASP's guided lesson-style vulnerable app, useful as a second angle on the same OWASP Top 10 categories.</li>
+    <li><b>Bug bounty platforms</b> (once you're Stage 3+) — legal, authorized real-world targets with defined scope, the natural next step after this course for continued practice.</li>
+  </ul>
+
+  <h2>Course-wide checklist</h2>
+  <ul class="checklist">
+    <li>Burp Suite installed (Community to start; Professional by Stage 2 for realistic Scanner/Sequencer/Turbo Intruder work)</li>
+    <li>CA certificate installed and HTTPS interception verified</li>
+    <li>A local vulnerable-app environment running (Juice Shop or DVWA) alongside Academy labs</li>
+    <li>A lab notebook or notes file started from day one</li>
+    <li>Written authorization or a purely local/legal target for every single test you run, no exceptions</li>
+  </ul>
+
+  <footer class="pagefoot">
+    Burp Suite Mastery — a four-stage self-study course from Beginner to BSCP-ready. Works fully offline; built for authorized security testing and education only. Toggle theme with <span class="kbd">Ctrl</span>+<span class="kbd">J</span>.
+  </footer>
+</main>
+
+<script>
+(function(){
+  var root = document.documentElement;
+  var btn = document.getElementById('theme-toggle');
+  function current(){
+    var a = root.getAttribute('data-theme');
+    if (a === 'dark' || a === 'light') return a;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  function paint(){
+    var t = current();
+    btn.setAttribute('data-current', t);
+    btn.setAttribute('aria-label', t === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+  }
+  function toggle(){
+    var next = current() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('burp-course-theme', next); } catch(e){}
+    paint();
+  }
+  btn.addEventListener('click', toggle);
+  document.addEventListener('keydown', function(e){
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && (e.key === 'j' || e.key === 'J')) {
+      e.preventDefault();
+      toggle();
+    }
+  });
+  paint();
+})();
+</script>
+</body>
+</html>
