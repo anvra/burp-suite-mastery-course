@@ -54,7 +54,6 @@
     padding:10px 16px;border-radius:0 0 8px 0;z-index:100;font-size:.85rem;font-weight:600;text-decoration:none}
   .skip-link:focus{left:0;top:0}
   .ic{stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;display:inline-block;vertical-align:middle}
-  .hicon{width:20px;height:20px;margin-right:8px;vertical-align:-4px;color:var(--accent)}
 
   /* ---------- Header ---------- */
   header.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb, var(--surface) 88%, transparent);
@@ -437,7 +436,7 @@ Content-Length: 842
     <tr><td>Intercept swallows unrelated background traffic</td><td>No scope defined yet</td><td>Set Target → Scope (Stage 2 covers this in depth) and filter HTTP History to in-scope items</td></tr>
   </table></div>
 
-  <h2 id="m9"><svg class="ic hicon" viewBox="0 0 24 24"><use href="#ic-browser"></use></svg><span class="num">09</span>Proxy &amp; Intercept</h2>
+  <h2 id="m9"><span class="num">09</span>Proxy &amp; Intercept</h2>
   <p><b>Why it matters:</b> it's your primary audit trail and the entry point into every other Burp tool — nothing else in this course works until you can see and hold a request.<br>
   <b>What it is:</b> the core MITM engine — every request/response you and your browser exchange with the target flows through it and can be paused, read, and edited.<br>
   <b>When to use it:</b> Intercept ON only when you need to modify a specific request live; leave it OFF and read HTTP History for normal browsing — flipping this habit is the single biggest quality-of-life improvement for new users.</p>

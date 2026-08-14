@@ -54,7 +54,6 @@
     padding:10px 16px;border-radius:0 0 8px 0;z-index:100;font-size:.85rem;font-weight:600;text-decoration:none}
   .skip-link:focus{left:0;top:0}
   .ic{stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;display:inline-block;vertical-align:middle}
-  .hicon{width:20px;height:20px;margin-right:8px;vertical-align:-4px;color:var(--accent)}
 
   header.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb, var(--surface) 88%, transparent);
     backdrop-filter:saturate(1.1) blur(8px);-webkit-backdrop-filter:saturate(1.1) blur(8px);
@@ -246,7 +245,7 @@
   <h1>Exploitation &amp; Professional Methodology</h1>
   <p class="lede">This is where labs stop being single-vulnerability exercises and start requiring you to chain two or three findings together — exactly what BSCP and real assessments demand. The second half of this stage shifts from finding bugs to proving, scoring, and writing them up like a professional.</p>
 
-  <h2 id="m1"><svg class="ic hicon" viewBox="0 0 24 24"><use href="#ic-cloud"></use></svg><span class="num">01</span>Server-Side Request Forgery (SSRF)</h2>
+  <h2 id="m1"><span class="num">01</span>Server-Side Request Forgery (SSRF)</h2>
   <p><b>Why it matters:</b> SSRF turns your own server into a proxy into its internal network — cloud credentials, admin panels, and databases that were never meant to be reachable from the internet suddenly are. <b>What it is:</b> the server itself fetches an attacker-supplied URL, letting you reach internal-only systems through it. <b>CWE-918 · <a href="https://portswigger.net/web-security/ssrf" target="_blank" rel="noopener">OWASP A10</a>.</b></p>
   <pre><code><span class="cmt"># Find parameters that accept URLs</span>
 url=, webhook=, callback=, fetch=, load=, import=

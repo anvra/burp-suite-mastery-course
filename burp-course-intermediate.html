@@ -54,7 +54,6 @@
     padding:10px 16px;border-radius:0 0 8px 0;z-index:100;font-size:.85rem;font-weight:600;text-decoration:none}
   .skip-link:focus{left:0;top:0}
   .ic{stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;display:inline-block;vertical-align:middle}
-  .hicon{width:20px;height:20px;margin-right:8px;vertical-align:-4px;color:var(--accent)}
 
   header.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb, var(--surface) 88%, transparent);
     backdrop-filter:saturate(1.1) blur(8px);-webkit-backdrop-filter:saturate(1.1) blur(8px);
@@ -277,7 +276,7 @@
     <tr><td>ActiveScan++</td><td>Adds SSTI, deserialization, and extra CORS/host-header checks to Scanner</td></tr>
   </table></div>
 
-  <h2 id="m2"><svg class="ic hicon" viewBox="0 0 24 24"><use href="#ic-database"></use></svg><span class="num">02</span>SQL Injection</h2>
+  <h2 id="m2"><span class="num">02</span>SQL Injection</h2>
   <p><b>Why it matters:</b> a single unfiltered parameter can hand an attacker the entire database — full read/write, authentication bypass, sometimes OS command execution via database features. It's consistently one of the highest-impact, most common findings in the industry. <b>What it is:</b> untrusted input reaches a SQL query without proper parameterization, letting an attacker alter the query's logic. <b>CWE-89 · <a href="https://portswigger.net/web-security/sql-injection" target="_blank" rel="noopener">OWASP A03</a>.</b></p>
 
   <h4>Detection workflow</h4>
