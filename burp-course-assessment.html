@@ -341,36 +341,119 @@
   </div>
 
   <h2 id="m8"><span class="num">08</span>Full Interview Question Bank</h2>
+  <p>Every question below expands into a model answer with a concrete example. Try answering out loud first, then open it — that's the closest you'll get to real interview pressure without another person in the room.</p>
+
   <h3>Fundamentals</h3>
-  <ol class="qbank">
-    <li>Explain the request/response cycle and where a proxy like Burp sits in it.</li>
-    <li>What's the difference between authentication and authorization, with an example bug for each?</li>
-    <li>Why does HTTPS require Burp to install its own CA certificate to intercept traffic?</li>
-    <li>Name three cookie attributes and what each protects against.</li>
-  </ol>
+
+  <details><summary>1. Explain the request/response cycle and where a proxy like Burp sits in it.</summary><div class="a">
+  <p style="margin:0 0 10px">A browser sends a request line (method + path + version), headers, and optionally a body; the server replies with a status line, response headers, and a body. Burp sits as a man-in-the-middle between the two: it terminates the client's connection, forwards a request of its own to the real server, and does the same in reverse for the response — so every byte in both directions passes through it and can be read or edited.</p>
+  <pre style="margin:0"><code>GET /account HTTP/1.1
+Host: example.com
+Cookie: session=abc123
+
+<span class="cmt">-- Burp sits here, holding the request before it ever reaches example.com --</span>
+
+HTTP/1.1 200 OK
+Content-Type: application/json
+{"user":"alice"}</code></pre>
+  </div></details>
+
+  <details><summary>2. What's the difference between authentication and authorization, with an example bug for each?</summary><div class="a">
+  <p style="margin:0 0 10px">Authentication answers "who are you" — login, MFA, session issuance. Authorization answers "what are you allowed to do" and is checked on every subsequent request. An AuthN bug breaks the identity check itself; an AuthZ bug lets a correctly-identified user reach data or actions they shouldn't.</p>
+  <p style="margin:0"><b>AuthN example:</b> a 2FA flow that trusts a client-supplied flag — intercept the verification response and flip <code>{"2fa_required":true}</code> to <code>false</code> to skip the second factor entirely.<br><b>AuthZ example:</b> <code>GET /api/orders/1001</code> returns your order; changing it to <code>/api/orders/1002</code> while still using your own session returns someone else's — a classic IDOR.</p>
+  </div></details>
+
+  <details><summary>3. Why does HTTPS require Burp to install its own CA certificate to intercept traffic?</summary><div class="a">
+  <p style="margin:0">TLS is designed so only the real server can produce a certificate the browser trusts for that domain. When Burp intercepts HTTPS, it generates its own certificate for each host on the fly and signs it with Burp's own Certificate Authority. The browser will only accept that certificate silently if it already trusts Burp's CA — which is exactly what installing <code>cacert.der</code> does. Skip that step and every HTTPS site throws <code>NET::ERR_CERT_AUTHORITY_INVALID</code> or similar, because the browser correctly detects a man-in-the-middle it wasn't told to trust.</p>
+  </div></details>
+
+  <details><summary>4. Name three cookie attributes and what each protects against.</summary><div class="a">
+  <p style="margin:0"><code>HttpOnly</code> blocks JavaScript from reading the cookie via <code>document.cookie</code>, so a successful XSS can't trivially exfiltrate the session token. <code>Secure</code> stops the cookie being sent over a plain HTTP connection, closing off network-level interception. <code>SameSite=Strict</code> (or <code>Lax</code>) stops the cookie being attached to cross-site requests, which is the main defense against CSRF. Example: <code>Set-Cookie: session=abc123; HttpOnly; Secure; SameSite=Lax</code> — missing any one of these three narrows the attack surface Burp should specifically go looking for.</p>
+  </div></details>
+
   <h3>Burp tool usage</h3>
-  <ol class="qbank">
-    <li>When would you choose Pitchfork over Cluster bomb in Intruder?</li>
-    <li>How does Sequencer decide a token is "weak"?</li>
-    <li>What's the practical difference between Scanner's crawl-only and crawl-and-audit modes?</li>
-    <li>How would you use Match and Replace to test how an app behaves without a specific security header?</li>
-  </ol>
+
+  <details><summary>5. When would you choose Pitchfork over Cluster bomb in Intruder?</summary><div class="a">
+  <p style="margin:0">Pitchfork walks multiple payload lists in lockstep — position 1 gets item 1 from list A and item 1 from list B on the same request, then both move to item 2 together. Use it when the values are already correlated, like a leaked list of matched username:password pairs from a breach dump. Cluster bomb instead tries every combination of every list — appropriate for generic credential stuffing where usernames and passwords aren't paired, but it explodes combinatorially (100 usernames × 100 passwords = 10,000 requests), so reach for Pitchfork whenever the pairing is already known.</p>
+  </div></details>
+
+  <details><summary>6. How does Sequencer decide a token is "weak"?</summary><div class="a">
+  <p style="margin:0">Sequencer captures thousands of live samples of a token, then runs statistical randomness tests (based on FIPS-style bit-level analysis) against the character positions to estimate how many bits of genuine unpredictability the token actually contains — its "effective entropy." A token that looks long but is built from a timestamp plus a short counter might report well under 64 effective bits even though it's 32 characters long. Anything meaningfully below 64 bits of effective entropy is reportable as a predictable/weak session or CSRF token (CWE-330), because it starts to become feasible to guess or narrow down valid values.</p>
+  </div></details>
+
+  <details><summary>7. What's the practical difference between Scanner's crawl-only and crawl-and-audit modes?</summary><div class="a">
+  <p style="margin:0">Crawl-only just walks the application's links and forms to build the site map — no payloads are sent, so it's safe to run early and fast even against a large app. Crawl-and-audit does that same walk but also fires the full active payload set at every parameter it finds along the way, which is slower and generates real attack traffic. In practice: run crawl-only first for a quick attack-surface map you can review, then run crawl-and-audit (or audit-only against selected items) once you've confirmed scope and login handling are configured correctly.</p>
+  </div></details>
+
+  <details><summary>8. How would you use Match and Replace to test how an app behaves without a specific security header?</summary><div class="a">
+  <p style="margin:0 0 10px">Add a response-side Match and Replace rule that matches the header and replaces it with nothing, then browse normally — the app never sees the header leave the proxy, letting you observe real behavior without touching server config.</p>
+  <pre style="margin:0"><code><span class="cmt"># Proxy -> Options -> Match and Replace</span>
+Type: Response header   Match: X-Frame-Options.*   Replace: (empty)
+<span class="cmt"># Now load the page in an iframe on a test page you control to confirm clickjacking exposure</span></code></pre>
+  </div></details>
+
   <h3>Vulnerability-specific</h3>
-  <ol class="qbank">
-    <li>Walk me through confirming blind SQL injection without any visible error or content difference.</li>
-    <li>What makes DOM-based XSS harder to find than reflected XSS with automated tools?</li>
-    <li>Describe two ways to bypass a naive file-upload extension filter.</li>
-    <li>How does algorithm confusion in JWT verification actually work?</li>
-    <li>What's a real-world business-logic flaw you'd test for in a checkout flow?</li>
-    <li>Explain CL.TE request smuggling in your own words.</li>
-  </ol>
+
+  <details><summary>9. Walk through confirming blind SQL injection without any visible error or content difference.</summary><div class="a">
+  <p style="margin:0 0 10px">When the response looks identical whether the injected condition is true or false, fall back to a side channel the app can't hide: time or an out-of-band callback. Send a baseline request, then a delayed one, and compare response times across several trials to rule out network noise before concluding.</p>
+  <pre style="margin:0"><code>username=admin' AND SLEEP(0)--     <span class="cmt"># baseline, should return immediately</span>
+username=admin' AND SLEEP(5)--     <span class="cmt"># if the response now takes ~5s longer, the query executed your injected SQL</span>
+
+<span class="cmt"># Fully blind / no timing signal available -> out-of-band via Collaborator</span>
+username=admin' AND (SELECT 1 FROM (SELECT SLEEP(5))a) UNION SELECT null-- <span class="cmt"># or an OOB DNS lookup payload</span></code></pre>
+  </div></details>
+
+  <details><summary>10. What makes DOM-based XSS harder to find than reflected XSS with automated tools?</summary><div class="a">
+  <p style="margin:0">Reflected XSS round-trips through the server — the payload appears in the request and again in the raw HTML response, which a scanner or passive proxy can pattern-match directly. DOM-based XSS never touches the server at all: client-side JavaScript reads an attacker-controlled source like <code>location.hash</code> or <code>document.referrer</code> and writes it straight into a dangerous sink like <code>innerHTML</code> or <code>eval()</code>. Since the vulnerable data flow lives entirely inside compiled/minified JavaScript running in the browser, you need to actually read the client-side code or use a dynamic tool like Burp's DOM Invader to trace source-to-sink flows — a purely server-side or regex-based scanner has nothing to look at.</p>
+  </div></details>
+
+  <details><summary>11. Describe two ways to bypass a naive file-upload extension filter.</summary><div class="a">
+  <p style="margin:0"><b>Double extension:</b> upload <code>shell.php.jpg</code> — a filter that only checks the string ends in an allowed image extension misses that the server may still execute anything containing <code>.php</code> anywhere in the name, depending on the web server's handler configuration. <b>Case variation:</b> upload <code>shell.pHp</code> — a blocklist regex written as <code>/\.php$/</code> (case-sensitive) won't catch it, while the OS/webserver's extension handling is typically case-insensitive on Windows and sometimes on Linux depending on config. Other angles worth knowing: alternate executable extensions the filter's list forgot (<code>.phtml</code>, <code>.php5</code>), and spoofing the <code>Content-Type</code> multipart header to <code>image/jpeg</code> when the check only inspects that header rather than the file's actual bytes.</p>
+  </div></details>
+
+  <details><summary>12. How does algorithm confusion in JWT verification actually work?</summary><div class="a">
+  <p style="margin:0">Some JWT libraries expose one generic <code>verify(token, key)</code> function that behaves differently depending on the <code>alg</code> claimed in the token's own header: for RS256 it treats <code>key</code> as an RSA public key, but for HS256 it treats the same <code>key</code> value as a raw HMAC secret. If the server is configured to trust RS256 tokens using a public key that's actually knowable to an attacker (RSA public keys are, by design, not secret), the attacker can craft a brand-new token, set its header to <code>"alg":"HS256"</code>, and sign it using that public key as the HMAC secret. If the server's verification code doesn't pin the expected algorithm and just does whatever the token's own header says, it will incorrectly validate the forged signature — letting the attacker set arbitrary claims like <code>"role":"admin"</code>.</p>
+  </div></details>
+
+  <details><summary>13. What's a real-world business-logic flaw you'd test for in a checkout flow?</summary><div class="a">
+  <p style="margin:0">A single-use discount coupon that isn't actually enforced atomically: fire several "apply coupon" requests at the exact same moment with Burp's "send group in parallel" feature, and if the backend checks "has this code been used" and marks it used as two separate, non-atomic steps, multiple concurrent requests can all read "not yet used" before any of them commits — applying the discount multiple times on one order. Other checkout-specific angles worth testing: negative item quantities crediting the account instead of charging it, and whether the final price is recalculated server-side or blindly trusted from a client-supplied total field.</p>
+  </div></details>
+
+  <details><summary>14. Explain CL.TE request smuggling in your own words.</summary><div class="a">
+  <p style="margin:0 0 10px">The front-end (load balancer/CDN) and the back-end application server disagree about how to determine where one HTTP request ends. CL.TE means the front-end trusts the <code>Content-Length</code> header to find the body's end, while the back-end trusts <code>Transfer-Encoding: chunked</code> instead. An attacker crafts a request with both headers present but contradictory: the front-end reads only up through the length it expects and forwards the connection onward, but the back-end — parsing by chunked encoding — treats part of what the front-end considered "the next request" as a lingering, smuggled tail of the previous one. That tail then gets prepended to whatever real request the next unlucky user sends over the same reused connection, letting the attacker inject a request that appears to come from someone else.</p>
+  <pre style="margin:0"><code>POST / HTTP/1.1
+Host: target.com
+Content-Length: 13
+Transfer-Encoding: chunked
+
+0
+
+SMUGGLED</code></pre>
+  </div></details>
+
   <h3>Methodology &amp; behavioral</h3>
-  <ol class="qbank">
-    <li>Tell me about a time you had to decide a finding was a false positive. How did you confirm it?</li>
-    <li>How do you keep testing within scope when a vulnerability chain seems to lead just outside it?</li>
-    <li>Describe how you'd communicate a Critical finding to a client mid-engagement, before the final report.</li>
-    <li>What's your process for writing a remediation recommendation you're confident a developer can actually implement?</li>
-  </ol>
+
+  <details><summary>15. Tell me about a time you had to decide a finding was a false positive. How did you confirm it?</summary><div class="a">
+  <p style="margin:0">Frame the answer around process, since interviewers are testing rigor, not the specific bug: Scanner flags something → don't take the label at face value → reproduce the exact request manually in Repeater → check whether the "vulnerable" behavior actually occurs (e.g. does the injected script tag genuinely appear unescaped in the Render tab, or was it HTML-entity-encoded and Scanner just matched the raw string in the response body) → only mark it a real finding once you've watched the impact happen with your own eyes, not inferred it from a signature match. Example: Scanner reports reflected XSS because it found your payload string in the response — but on inspection the app had encoded <code>&lt;</code> to <code>&amp;lt;</code>, so nothing executes; that's a false positive worth closing immediately so it doesn't dilute the report's credibility.</p>
+  </div></details>
+
+  <details><summary>16. How do you keep testing within scope when a vulnerability chain seems to lead just outside it?</summary><div class="a">
+  <p style="margin:0">Stop at the boundary the moment you recognize it, document exactly what you observed and why you believe the chain continues (e.g. "this SSRF appears able to reach an internal host that isn't in our authorized IP range"), and raise it to the client immediately rather than proceeding — either to get written authorization to extend scope for that specific path, or to note it in the report as an observation for them to investigate internally. Testing past an agreed boundary, even when technically trivial, is the fastest way to turn a legitimate engagement into a legal problem.</p>
+  </div></details>
+
+  <details><summary>17. Describe how you'd communicate a Critical finding to a client mid-engagement, before the final report.</summary><div class="a">
+  <p style="margin:0">Follow whatever emergency-contact process was defined in the rules of engagement — usually an immediate phone call or a designated secure channel, not email with exploit details attached in plaintext. Give them enough to act now (affected system, rough nature of the issue, whether it appears to be actively exploited by anyone else) without necessarily handing over a working exploit over an insecure channel. Follow up with a short written summary once the verbal notification is done, and continue the full technical write-up for the final report — the goal of the interim notice is speed, not completeness.</p>
+  </div></details>
+
+  <details><summary>18. What's your process for writing a remediation recommendation you're confident a developer can actually implement?</summary><div class="a">
+  <p style="margin:0 0 10px">Target the root cause, not the symptom, and be specific enough that a developer doesn't have to guess what "sanitize the input" means in practice. Reference the exact mechanism (parameterized queries, not "escape quotes"), and where useful, show the concrete fix pattern rather than describing it abstractly.</p>
+  <pre style="margin:0"><code><span class="cmt">-- Vague, unhelpful: "validate user input before using it in the query"</span>
+
+<span class="cmt">-- Specific and actionable:</span>
+<span class="cmt">-- Replace string-concatenated SQL with a parameterized query, e.g. (Python/psycopg2):</span>
+cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+<span class="cmt">-- not: cursor.execute("SELECT * FROM users WHERE username = '" + username + "'")</span></code></pre>
+  </div></details>
 
   <h2 id="m9"><span class="num">09</span>Certification-Readiness Checkpoint</h2>
   <p>Rate yourself honestly, 1 (not confident) to 5 (could teach it), before scheduling the exam. Anything below 4 in more than two rows means another pass through that stage's module first.</p>
